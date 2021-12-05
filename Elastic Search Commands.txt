@@ -1,0 +1,3044 @@
+GET /_cluster/health
+
+GET /_cat/nodes?v
+
+GET /_nodes
+
+GET /_cat/indices?v
+
+GET /.kibana/_search
+{
+"query": {
+  "match_all": {}
+}  
+}
+
+PUT /pages
+
+GET /_cat/shards
+
+DELETE /pages
+
+PUT /products
+{
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 2
+  }
+}
+
+POST /products/_doc
+{
+  "name": "Coffee Maker",
+  "price": 64,
+  "in_stock": 10
+}
+
+
+PUT /products/_doc/100
+{
+  "name": "Toaster",
+  "price": 55,
+  "in_stock": 4
+}
+
+GET /products/_doc/100
+
+POST /products/_update/100
+{
+  "doc": {
+    "in_stock":40
+  }
+}
+
+POST /products/_update/100
+{
+  "doc": {
+    "tax": ["electronics"]
+  }
+}
+
+POST /products/_update/100
+{
+  "script": {
+  "source": "ctx._source.in_stock--"  
+  }
+}
+
+POST /products/_update/100
+{
+  "script": {
+  "source": "ctx._source.in_stock = 10"  
+  }
+}
+
+POST /products/_update/100
+{
+  "script": {
+  "source": "ctx._source.in_stock-=params.quantity",
+  "params": {
+    "quantity":4
+  }
+  }
+}
+
+POST /products/_update/101
+{
+  "script": {
+  "source": "ctx._source.in_stock++"
+  },
+  "upsert": {
+    "name": "Blender",
+  "price": 399,
+  "in_stock": 5
+  }
+} 
+
+GET /products/_doc/101
+
+PUT /products/_doc/100
+{
+  "name": "Toaster",
+  "price": 89,
+  "in_stock": 4
+}
+
+GET /products/_doc/100
+
+DELETE /products/_doc/101
+
+GET /products/_doc/101
+
+POST /products/_update/100?if_primary_term=1&if_seq_no=8
+{
+  "doc":{
+    "in_stock":123
+  }
+}
+
+POST /products/_update_by_query
+{
+  "script": {
+  "source": "ctx._source.in_stock++"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+
+POST /products/_delete_by_query
+{
+  "query":{
+    "match_all": {}
+  }
+}
+
+POST /_bulk
+{"index":{"_index":"products", "_id":200}}
+{"name":"oven", "price":200,"in_stock":12}
+{"create":{"_index":"products", "_id":201}}
+{"name":"Microwave Oven", "price":250,"in_stock":12}
+
+POST /_bulk
+{"update":{"_index":"products", "_id":200}}
+{"doc":{"price":205}}
+{"delete":{"_index":"products", "_id":201}}
+
+POST /products/_bulk
+{"update":{"_id":200}}
+{"doc":{"price":205}}
+{"delete":{"_id":201}}
+
+
+GET /products/_search
+{
+  "query":{
+    "match_all": {}
+  }
+}
+
+POST /_analyze
+{
+  "text": "2 guys walk into  a bar, but thethird... DUCKS! :-)",
+  "analyzer": "standard"
+}
+
+POST /_analyze
+{
+  "text": "2 guys walk into  a bar, but thethird... DUCKS! :-)",
+  "char_filter": [],
+  "tokenizer": "standard",
+  "filter": ["lowercase"]
+}
+
+
+POST /_analyze
+{
+  "text": "2 guys walk into  a bar, but thethird... DUCKS! :-)",
+  "analyzer": "keyword"
+}
+
+PUT /coersion_test/_doc/1
+{
+  "price": 7.4
+}
+
+PUT /coersion_test/_doc/2
+{
+  "price": "7.4"
+}
+
+PUT /coersion_test/_doc/3
+{
+  "price": "7.4m"
+}
+
+GET /coersion_test/_doc/2
+
+POST /_analyze
+{
+  "text": ["Strings are ","merged together"],
+  "analyzer": "standard"
+}
+
+PUT /reviews
+{
+  "mappings": {
+    "properties": {
+      "rating":{ "type": "float"},
+      "content":{ "type": "text"},
+      "product_id":{ "type": "integer"},
+      "author":{
+        "properties": {
+          "first_name": {"type": "text"},
+          "last_name": {"type": "text"},
+          "email": {"type": "keyword"}
+        }
+      }
+    }
+  }
+}
+
+PUT /reviews/_doc/1
+{
+  "rating":5.0,
+  "content":"Outstanding Course",
+  "product_id":123,
+  "author":{
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johnDoe@gmail.com"
+           }
+}
+
+GET /reviews/_doc/1
+
+GET /reviews/_mapping/field/content
+
+GET /reviews/_mapping/field/author.email
+
+
+PUT /reviews._dot_notation
+{
+  "mappings": {
+    "properties": {
+      "rating":{ "type": "float"},
+      "content":{ "type": "text"},
+      "product_id":{ "type": "integer"},
+      "author.first_name": {"type": "text"},
+      "author.last_name": {"type": "text"},
+      "author.email": {"type": "keyword"}
+    }
+  }
+}
+
+GET /reviews/_mapping
+
+GET /reviews._dot_notation/_mapping
+
+PUT /reviews/_mapping
+{
+  "properties":{
+    "created_at":{
+      "type":"text"
+    }
+  }
+}
+
+GET /reviews/_mapping
+
+PUT /reviews/_doc/2
+{
+      "rating":4.5,
+      "content":"Not bad at All",
+      "product_id":123,
+      "created_at":"2015-7-27",
+      "author.first_name": "Imran",
+      "author.last_name": "Abbas",
+      "author.email": "ia@gmail.com"
+}
+
+PUT /reviews/_doc/3
+{
+      "rating":4.5,
+      "content":"Not bad at All",
+      "product_id":123,
+      "created_at":"2015-7-27T09:21:51+01:00",
+      "author.first_name": "Imran",
+      "author.last_name": "Abbas",
+      "author.email": "ia@gmail.com"
+}
+
+PUT /reviews/_doc/4
+{
+      "rating":4.5,
+      "content":"Not bad at All",
+      "product_id":125,
+      "created_at":1436011284000,
+      "author.first_name": "Imran",
+      "author.last_name": "Abbas",
+      "author.email": "ia@gmail.com"
+}
+
+
+GET /reviews/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+PUT /reviews/_mapping
+{
+  "properties":{
+    "product_id":{
+      "type":"keyword"
+    }
+  }
+}
+
+PUT /reviews/_mapping
+{
+  "properties":{
+    "author":{
+      "properties":{
+    "email":{
+      "type":"keyword",
+      "ignore_above":256
+    }
+      }
+    }
+  }
+}
+
+PUT /reviews_new
+{
+  "mappings":{
+    "properties" : {
+        "author" : {
+          "properties" : {
+            "email" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            },
+            "first_name" : {
+              "type" : "text"
+            },
+            "last_name" : {
+              "type" : "text"
+            }
+          }
+        },
+        "content" : {
+          "type" : "text"
+        },
+        "created_at" : {
+          "type" : "text"
+        },
+        "product_id" : {
+          "type" : "keyword"
+        },
+        "rating" : {
+          "type" : "float"
+        }
+      }
+  }
+}
+
+POST /_reindex
+{
+  "source": {
+    "index": "reviews"
+  },
+  "dest": {
+    "index": "reviews_new"
+  },
+  "script": {
+    "source": """
+    if(ctx._source.product_id!=null){
+      ctx._source.product_id = ctx._source.product_id.toString();
+    }
+    """
+  }
+}
+
+
+GET /reviews_new/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+POST /reviews_new/_delete_by_query
+{
+  "query":{
+    "match_all":{}
+  }
+}
+
+
+POST /_reindex
+{
+  "source": {
+    "index": "reviews",
+    "query": {
+      "range": {
+        "rating": {
+          "gte": 4
+        }
+      }
+    }
+  },
+  "dest": {
+    "index": "reviews_new"
+  },
+  "script": {
+    "source": """
+    if(ctx._source.product_id!=null){
+      ctx._source.product_id = ctx._source.product_id.toString();
+    }
+    """
+  }
+}
+
+
+POST /_reindex
+{
+  "source": {
+    "index": "reviews",
+    "_source":["content","created_at","rating"]
+  },
+  "dest": {
+    "index": "reviews_new"
+  }
+}
+
+
+POST /_reindex
+{
+  "source": {
+    "index": "reviews"
+  },
+  "dest": {
+    "index": "reviews_new"
+  },
+  "script": {
+    "source": """
+    #: Rename content field to comment
+      ctx._source.comment = ctx._source.remove('content');
+    """
+  }
+}
+
+
+POST /_reindex
+{
+  "source": {
+    "index": "reviews"
+  },
+  "dest": {
+    "index": "reviews_new"
+  },
+  "script": {
+    "source": """
+    #: Noop will not index the field
+    #: Can also be Deleted
+    if(ctx._source.rating < 4.0){
+      ctx.op = "noop";
+    }
+    """
+  }
+}
+
+
+POST /reviews_new/_mapping
+{
+  "properties":{
+    "comment":{
+      "type":"alias",
+      "path": "content"
+    }
+  }
+}
+
+GET /reviews_new/_search
+{
+  "query": {
+    "match": {
+    "content":"outstanding"
+    }
+  }
+}
+
+GET /reviews_new/_search
+{
+  "query": {
+    "match": {
+     "comment":"outstanding"
+    }
+  }
+}
+
+PUT /multi_field_test
+{
+  "mappings": {
+    "properties": {
+      "description":{
+        "type":"text"
+      },
+      "ingredients":{
+        "type": "text",
+        "fields": {
+          "keyword":{
+            "type":"keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+POST /multi_field_test/_doc
+{
+  "description":"To make this spagettite you need to....",
+  "ingredients":["Spaghetti","Bacon","Eggs"]
+}
+
+GET /multi_field_test/_search
+{
+  "query": {
+    "match": {
+      "ingredients": "Spaghetti"
+    }
+  }
+}
+
+GET /multi_field_test/_search
+{
+  "query": {
+    "match": {
+      "ingredients.keyword": "Spaghetti"
+    }
+  }
+}
+
+GET /multi_field_test/_search
+{
+  "query": {
+    "term": {
+      "ingredients.keyword": "Spaghetti"
+    }
+  }
+}
+
+DELETE /multi_field_test
+
+PUT /_template/access-logs
+{
+  "index_patterns": ["access-logs-*"],
+  "settings": {
+    "number_of_shards": 2,
+    "index.mapping,coerce":false
+  },
+  "mappings": {
+    "properties": {
+      "@timestamp":{
+        "type": "date"
+      },
+      "uri.original":{
+        "type": "keyword"
+      },
+      "http.request.referrer":{
+        "type": "keyword"
+      },
+      "http.response.status_code":{
+        "type":"long"
+      }
+    }
+  }
+}
+
+PUT /access-logs-2021-11-21
+
+GET /access-logs-2021-11-21
+
+PUT /_template/access-logs
+{
+  # Full Configuration for updating effects only new indexes
+}
+
+GET /_template/access-logs
+
+DELETE /_template/access-logs
+
+GET  /products/_mapping
+
+PUT /people
+{
+  "mappings": {
+    "properties": {
+      "first_name":{
+        "type": "text"
+      }
+    }
+  }
+}
+
+POST /people/_doc
+{
+  "first_name":"Talha",
+  "last_name": "Anjum"
+}
+
+GET /people/_mapping
+
+DELETE /people
+
+
+PUT /people
+{
+  "mappings": {
+    "dynamic":"strict",
+    "properties": {
+      "first_name":{
+        "type": "text"
+      }
+    }
+  }
+}
+
+POST /people/_doc
+{
+  "first_name":"Talha",
+  "last_name": "Anjum"
+}
+
+GET /people/_mapping
+
+DELETE /people
+
+GET /people/_search
+{
+  "query": {
+    "match": {
+      "first_name": "Talha"
+    }
+  }
+}
+
+GET /people/_search
+{
+  "query": {
+    "match": {
+      "last_name": "Anjum"
+    }
+  }
+}
+
+PUT /dynamic_template_test
+{
+  "mappings": {
+    "dynamic_templates":[
+      {
+        "integers":{
+          "match_mapping_type":"long",
+          "mapping":{
+            "type":"integer"
+          }
+        }
+      }
+      ]
+  }
+}
+
+POST /dynamic_template_test/_doc
+{
+  "in_stock":123
+}
+
+GET /dynamic_template_test/_mapping
+
+PUT /analyzer_test
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_custom_analyser":{
+          "type":"custom",
+          "char_filter":["html_strip"],
+          "tokenizer":"standard",
+          "filter":["lowercase","stop","asciifolding"]
+        }
+      }
+    }
+  }
+}
+
+DELETE /analyzer_test
+
+POST /_analyze
+{
+  "analyzer": "standard",
+  "text":"I&apos;m in a <em>good</em> mood&nbsp;and I <strong>love</strong> acoil"
+}
+
+POST /_analyze
+{
+  "char_filter": ["html_strip"], 
+  "text":"I&apos;m in a <em>good</em> mood&nbsp;and I <strong>love</strong> acoil"
+}
+
+POST /analyzer_test/_analyze
+{
+  "analyzer": "my_custom_analyser", 
+  "text":"I&apos;m in a <em>good</em> mood&nbsp;and I <strong>love</strong> acoil"
+}
+
+PUT /analyzer_test
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "danish_stop":{
+          "type":"stop",
+          "stopwords":"_danish_"
+        }
+      }, 
+      "char_filter": {},
+      "tokenizer": {}, 
+      "analyzer": {
+        "my_custom_analyser":{
+          "type":"custom",
+          "char_filter":["html_strip"],
+          "tokenizer":"standard",
+          "filter":["lowercase","danish_stop","asciifolding"]
+        }
+      }
+    }
+  }
+}
+
+PUT /analyzer_test/_settings
+{
+  "analysis": {
+    "analyzer": {
+        "my_second_analyser":{
+          "type":"custom",
+          "char_filter":["html_strip"],
+          "tokenizer":"standard",
+          "filter":["lowercase","stop","asciifolding"]
+        }
+      }
+  }
+}
+
+POST /analyzer_test/_close
+
+POST /analyzer_test/_open
+
+GET /analyzer_test/_settings
+
+POST /analyzer_test/_mapping
+{
+  "properties":{
+    "description":{
+      "type":"text",
+      "analyzer":"my_custom_analyser"
+    }
+  }
+}
+
+POST /analyzer_test/_doc
+{
+  "description":"Is that Peter's cute-looking dog?"
+}
+
+GET /analyzer_test/_search
+{
+  "query": {
+    "match": {
+      "description": {
+        "query": "that",
+        "analyzer": "keyword"
+      }
+    }
+  }
+}
+
+
+PUT /analyzer_test/_settings
+{
+  "analysis": {
+    "analyzer": {
+        "my_custom_analyser":{
+          "type":"custom",
+          "char_filter":["html_strip"],
+          "tokenizer":"standard",
+          "filter":["lowercase","asciifolding"]
+        }
+      }
+  }
+}
+
+POST /analyzer_test/_close
+
+POST /analyzer_test/_open
+
+GET /analyzer_test/_settings
+
+POST /analyzer_test/_update_by_query?conflicts=proceed
+
+GET /products/_search?q=name:Lobster AND Boiled
+
+GET /products/_search
+{
+  "query":{
+    "match_all": {}
+  }
+}
+
+GET /products/_search
+{
+  "explain": true, 
+  "query":{
+    "match": {
+      "name":"Lobster"
+    }
+  }
+}
+
+GET /products/_explain
+{
+  "query":{
+    "term": {
+      "name":"lobster"
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "term": {
+      "name":"lobster"
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "term": {
+      "name":"Lobster"
+    }
+  }
+}
+
+# term level  queries gets the eaxct matches so dont preferred to use on 
+# description
+
+GET /products/_search
+{
+  "query":{
+    "term": {
+      "is_active":true
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "term": {
+      "is_active":{
+        "value":true
+      }
+    }
+  }
+}
+## also can look for enums usually used for dates, number fields
+
+GET /products/_search
+{
+  "query":{
+    "terms": {
+      "tags.keyword":[
+        "Soup",
+        "Cake"
+        ]
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "ids": {
+      "values":[
+        1,2,3
+        ]
+    }
+  }
+}
+
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "in_stock":{
+        "gte": 1,
+        "lte": 5
+      }
+    }
+  }
+}
+
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "created":{
+        "gte": "2010/01/01",
+        "lte": "2010/12/31"
+      }
+    }
+  }
+}
+
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "created":{
+        "gte": "01-01-2010",
+        "lte": "31-12-2010",
+        "format": "dd-MM-yyyy"
+      }
+    }
+  }
+}
+
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "created":{
+        "gte": "2010/01/01||-1y-1d"
+      }
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "created":{
+        "gte": "2010/01/01||-1y/M"
+      }
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "created":{
+        "gte": "2010/01/01||/M-1y"
+      }
+    }
+  }
+}
+
+# empty strings doesnot comes in exists query
+GET /products/_search
+{
+  "query":{
+    "exists": {
+      "field":"tags"
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "prefix": {
+      "tags.keyword":"Vege"
+    }
+  }
+}
+
+# wildCards query can be added to query like *(all) or ?(single), can be 
+# slow bcz have to iterate over manay fields. In cluster it can be really 
+# slow 
+GET /products/_search
+{
+  "query":{
+    "wildcard": {
+      "tags.keyword":"Veg*ble"
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "wildcard": {
+      "tags.keyword":"Veget?ble"
+    }
+  }
+}
+
+# regular expressions, use lucene regualr expression /d and anchors are not
+# supported
+
+GET /products/_search
+{
+  "query":{
+    "regexp": {
+      "tags.keyword":"Veget[a-z,A-Z]+ble"
+    }
+  }
+}
+
+# Assignment 1
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "sold":{
+        "lt": 10
+      }    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "range": {
+      "sold":{
+        "gte": 10, 
+        "lt": 30
+      }    }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "terms": {
+      "tags.keyword":[
+        "Meat"]
+      }
+  }
+}
+
+
+
+GET /products/_search
+{
+  "query":{
+    "terms": {
+      "name":[
+        "Tomato","Paste"]
+      }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "prefix": {
+      "name":"pas"
+      }
+  }
+}
+
+GET /products/_search
+{
+  "query":{
+    "regexp": {
+      "name":"[0-9]+"
+      }
+  }
+}
+
+
+# full text queries for blogpost or description, etc
+
+GET /recipe/_search
+{
+  "query":{
+    "match_all": {}
+  }
+}
+
+
+GET /recipe/_search
+{
+  "query":{
+    "match": {
+      "title": "Recipe with pasta or spaghetti"
+    }
+  }
+}
+
+
+
+GET /recipe/_search
+{
+  "query":{
+    "match": {
+      "title": {
+        "query":"pasta or spaghetti",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "query":{
+    "match_phrase": {
+      "title": "spaghetti puttanesca"
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "query":{
+    "multi_match": {
+      "query": "pasta",
+      "fields": ["title","description"]
+    }
+  }
+}
+
+#Assignment 2
+
+GET /recipe/_search
+{
+  "query":{
+    "match": {
+      "title": "pasta with parmesan and spinach"
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "query":{
+    "match_phrase": {
+      "title": "pasta carbonara"
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "query":{
+    "multi_match": {
+      "query": "pasta or pesto",
+      "fields": ["title","description"]
+    }
+  }
+}
+
+# Compound and Leaf queries
+# filter doesnot have hpw well they match and better for caching
+GET /recipe/_search
+{
+  "query":{
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        },
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+        ]
+    }
+  }
+}
+
+# should boost the scores the result with parsley will rank higher thanl 
+# that doesnot have
+GET /recipe/_search
+{
+  "query":{
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        }
+        ],
+        "must_not": [
+        {
+          "match": {
+            "ingredients.name": "tuna"
+          }
+        }
+        ],
+        "should": [
+        {
+          "match": {
+            "ingredients.name": "parsley"
+          }
+        }
+        ],
+        "filter": [
+          {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+        ]
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "query":{
+    "bool": {
+        "should": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        }
+        ]
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "query":{
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": {
+              "query":"parmesan",
+              "_name": "parmesan_must"
+            }
+          }
+        }
+        ],
+        "must_not": [
+        {
+          "match": {
+            "ingredients.name": {
+              "query":"tuna",
+              "_name": "tuna_not"
+            }
+          }
+        }
+        ],
+        "should": [
+        {
+          "match": {
+            "ingredients.name": {
+              "query":"parsley",
+              "_name":"parsley_should"
+            }
+          }
+        }
+        ],
+        "filter": [
+          {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15,
+              "_name": "prep_time_filter"
+            }
+          }
+        }
+        ]
+    }
+  }
+}
+
+
+
+GET /recipe/_search
+{
+  "query": {
+    "match": {
+      "title": "pasta carbanara"
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "term": {
+            "title": "pasta"
+          }
+        },
+        {
+          "term": {
+            "title": "crabanara"
+          }
+        }
+        ]
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "query": {
+    "match": {
+      "title": {
+        "query":"pasta carbanara",
+      "operator": "and"}
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "title": "pasta"
+          }
+        },
+        {
+          "term": {
+            "title": "crabanara"
+          }
+        }
+        ]
+    }
+  }
+}
+
+# Joining queries
+PUT /department
+{
+  "mappings": {
+      "properties":{
+        "name":{
+          "type": "text"
+        },
+        "employees":{
+          "type": "nested"
+        }
+    }
+  }
+}
+
+PUT /department/_doc/1
+{
+  "name": "Development",
+  "employees": [
+    {
+      "name": "Eric Green",
+      "age": 39,
+      "gender": "M",
+      "position": "Big Data Specialist"
+    },
+    {
+      "name": "James Taylor",
+      "age": 27,
+      "gender": "M",
+      "position": "Software Developer"
+    },
+    {
+      "name": "Gary Jenkins",
+      "age": 21,
+      "gender": "M",
+      "position": "Intern"
+    },
+    {
+      "name": "Julie Powell",
+      "age": 26,
+      "gender": "F",
+      "position": "Intern"
+    },
+    {
+      "name": "Benjamin Smith",
+      "age": 46,
+      "gender": "M",
+      "position": "Senior Software Engineer"
+    }
+  ]
+}
+
+PUT /department/_doc/2
+{
+  "name": "HR & Marketing",
+  "employees": [
+    {
+      "name": "Patricia Lewis",
+      "age": 42,
+      "gender": "F",
+      "position": "Senior Marketing Manager"
+    },
+    {
+      "name": "Maria Anderson",
+      "age": 56,
+      "gender": "F",
+      "position": "Head of HR"
+    },
+    {
+      "name": "Margaret Harris",
+      "age": 19,
+      "gender": "F",
+      "position": "Intern"
+    },
+    {
+      "name": "Ryan Nelson",
+      "age": 31,
+      "gender": "M",
+      "position": "Marketing Manager"
+    },
+    {
+      "name": "Kathy Williams",
+      "age": 49,
+      "gender": "F",
+      "position": "Senior Marketing Manager"
+    },
+    {
+      "name": "Jacqueline Hill",
+      "age": 28,
+      "gender": "F",
+      "position": "Junior Marketing Manager"
+    },
+    {
+      "name": "Donald Morris",
+      "age": 39,
+      "gender": "M",
+      "position": "SEO Specialist"
+    },
+    {
+      "name": "Evelyn Henderson",
+      "age": 24,
+      "gender": "F",
+      "position": "Intern"
+    },
+    {
+      "name": "Earl Moore",
+      "age": 21,
+      "gender": "M",
+      "position": "Junior SEO Specialist"
+    },
+    {
+      "name": "Phillip Sanchez",
+      "age": 35,
+      "gender": "M",
+      "position": "SEM Specialist"
+    }
+  ]
+}
+
+DELETE /department/_doc/2
+# nested objects cannot be query like this
+GET /department/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "employees.position": "intern"
+          }
+        },
+        {
+          "term": {
+            "employees.gender": "F"
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET /department/_search
+{
+  "query": {
+    "nested": {
+      "path": "employees",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "employees.position": "intern"
+              }
+            },
+            {
+              "term": {
+                "employees.gender.keyword": {
+                  "value": "F"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+# inner hits are sorted by relavant scores
+GET /department/_search
+{
+  "_source": false, 
+  "query": {
+    "nested": {
+      "path": "employees",
+      "inner_hits": {}, 
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "employees.position": "intern"
+              }
+            },
+            {
+              "term": {
+                "employees.gender.keyword": {
+                  "value": "F"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+DELETE /department
+
+PUT /department
+{
+  "mappings": {
+    "properties": {
+      "join_field":{
+        "type": "join",
+        "relations":{
+          "department":"employee"
+        }
+      }
+    }
+  }
+}
+
+PUT /department/_doc/1
+{
+  "name": "Development",
+  "join_field": "department"
+}
+
+PUT /department/_doc/2
+{
+  "name": "Marketing",
+  "join_field": "department"
+}
+
+PUT /department/_doc/3?routing=1
+{
+  "name": "Bo Andersen",
+  "age": 28,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+
+PUT /department/_doc/4?routing=2
+{
+  "name": "John Doe",
+  "age": 44,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 2
+  }
+}
+
+PUT /department/_doc/5?routing=1
+{
+  "name": "James Evans",
+  "age": 32,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+PUT /department/_doc/6?routing=1
+{
+  "name": "Daniel Harris",
+  "age": 52,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+
+PUT /department/_doc/7?routing=2
+{
+  "name": "Jane Park",
+  "age": 23,
+  "gender": "F",
+  "join_field": {
+    "name": "employee",
+    "parent": 2
+  }
+}
+PUT /department/_doc/8?routing=1
+{
+  "name": "Christina Parker",
+  "age": 29,
+  "gender": "F",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+
+GET /department/_search
+{
+  "query": {
+    "parent_id":{
+      "type":"employee",
+      "id":2
+    }
+  }
+}
+
+
+GET /department/_search
+{
+  "query": {
+    "has_parent":{
+      "parent_type":"department",
+      "query": {
+        "term": {
+          "name.keyword":"Development"
+        }
+      }
+    }
+  }
+}
+
+# look at function_score
+GET /department/_search
+{
+  "query": {
+    "has_parent":{
+      "parent_type":"department",
+      "score": true,
+      "query": {
+        "term": {
+          "name.keyword":"Development"
+        }
+      }
+    }
+  }
+}
+
+
+GET /department/_search
+{
+  "query": {
+    "has_child":{
+      "type":"employee",
+      "score_mode": "sum", 
+      "min_children": 2,
+      "max_children": 5, 
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "age": {
+                  "gte": 50
+                }
+              }
+            }
+          ],
+          "should": [
+            {
+              "term": {
+                "gender": {
+                  "value": "M"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+PUT /company
+{
+  "mappings": {
+    "properties": {
+      "join_field":{
+        "type": "join",
+        "relations":{
+          "company":["department","supplier"],
+          "department":"employee"
+        }
+      }
+    }
+  }
+}
+
+PUT /company/_doc/1
+{
+  "name": "My Company Inc.",
+  "join_field": "company"
+}
+
+PUT /company/_doc/2?routing=1
+{
+  "name": "Development",
+  "join_field": {
+    "name": "department",
+    "parent": 1
+  }
+}
+
+PUT /company/_doc/3?routing=1
+{
+  "name": "Bo Andersen",
+  "join_field": {
+    "name": "employee",
+    "parent": 2
+  }
+}
+PUT /company/_doc/4
+{
+  "name": "Another Company, Inc.",
+  "join_field": "company"
+}
+
+PUT /company/_doc/5?routing=4
+{
+  "name": "Marketing",
+  "join_field": {
+    "name": "department",
+    "parent": 4
+  }
+}
+
+PUT /company/_doc/6?routing=4
+{
+  "name": "John Doe",
+  "join_field": {
+    "name": "employee",
+    "parent": 5
+  }
+}
+
+GET /company/_search
+{
+  "query": {
+    "has_child": {
+      "type": "department",
+      "query": {
+        "has_child": {
+          "type": "employee",
+          "query": {
+            "term": {
+              "name.keyword": "Bo Andersen"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT /users/_doc/1
+{
+  "name": "John Roberts",
+  "following" : [2, 3]
+}
+PUT /users/_doc/2
+{
+  "name": "Elizabeth Ross",
+  "following" : []
+}
+PUT /users/_doc/3
+{
+  "name": "Jeremy Brooks",
+  "following" : [1, 2]
+}
+PUT /users/_doc/4
+{
+  "name": "Diana Moore",
+  "following" : [3, 1]
+}
+PUT /stories/_doc/1
+{
+  "user": 3,
+  "content": "Wow look, a penguin!"
+}
+PUT /stories/_doc/2
+{
+  "user": 1,
+  "content": "Just another day at the office... #coffee"
+}
+PUT /stories/_doc/3
+{
+  "user": 1,
+  "content": "Making search great again! #elasticsearch #elk"
+}
+PUT /stories/_doc/4
+{
+  "user": 4,
+  "content": "Had a blast today! #rollercoaster #amusementpark"
+}
+PUT /stories/_doc/5
+{
+  "user": 4,
+  "content": "Yay, I just got hired as an Elasticsearch consultant - so excited!"
+}
+PUT /stories/_doc/6
+{
+  "user": 2,
+  "content": "Chilling at the beach @ Greece #vacation #goodtimes"
+}
+
+
+GET /stories/_search
+{
+  "query": {
+    "terms": {
+      "user": {
+        "index": "users",
+        "id": "1",
+        "path": "following"
+      }
+    }
+  }
+}
+
+# join fields should be used with caution, the query gets slow when more
+# documents are added to index
+# when you want to have a one to many relations then u can use it
+# recipes and ingredients
+# as compare tojoin use nested if possible
+
+# Join field limitations
+# docs must be stored in same index
+# parent and child must on same shard
+# there can only be one join field per doc
+
+GET /recipe/_search?format=yaml
+{
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "_source": false, 
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "_source": ["ingredients.*","servings"], 
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "_source": {
+    "includes": "ingredients.*"
+    , "excludes": "ingredients.name"
+  },
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+
+GET /recipe/_search?size=2
+{
+  "_source": false, 
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "_source": false,
+  "size": 2, 
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+
+GET /recipe/_search?from=2
+{
+  "_source": false,
+  "size": 2, 
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+GET /recipe/_search
+{
+  "_source": false,
+  "from": 2, 
+  "size": 2, 
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+# Pagination
+
+# Sorting
+GET /recipe/_search
+{
+  "_source": false,
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    "preparation_time_minutes"
+  ]
+}
+
+GET /recipe/_search
+{
+  "_source": "created",
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    { "created": "desc" }
+  ]
+}
+
+GET /recipe/_search
+{
+  "_source": [ "preparation_time_minutes", "created" ],
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    { "preparation_time_minutes": "asc" },
+    { "created": "desc" }
+  ]
+}
+
+
+# Aggregation
+PUT /order
+{
+  "mappings": {
+    "properties": {
+      "purchased_at": {
+        "type": "date"
+      },
+      "lines": {
+        "type": "nested",
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "double"
+          },
+          "quantity": {
+            "type": "short"
+          }
+        }
+      },
+      "total_amount": {
+        "type": "double"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "sales_channel": {
+        "type": "keyword"
+      },
+      "salesman": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "text"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+# Metric Aggregation
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_sales": {
+      "sum": {
+        "field": "total_amount"
+      }
+    },
+    "avg_sale": {
+      "avg": {
+        "field": "total_amount"
+      }
+    },
+    "min_sale": {
+      "min": {
+        "field": "total_amount"
+      }
+    },
+    "max_sale": {
+      "max": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+# cardinality search no of distinct values
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_salesmen": {
+      "cardinality": {
+        "field": "salesman.id"
+      }
+    }
+  }
+}
+
+
+# value_count not used with match all query mostly
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "value_count": {
+      "value_count": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_stats": {
+      "stats": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+
+# Bucket Aggregations, a bit more complicated but powerful
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status"
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status",
+        "missing": "N/A",
+        "min_doc_count": 0
+      }
+    }
+  }
+}
+
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status",
+        "missing": "N/A",
+        "min_doc_count": 0,
+        "order": {
+          "_key": "asc"
+        }
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status"
+      },
+      "aggs": {
+        "status_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status"
+      },
+      "aggs": {
+        "status_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "low_value": {
+      "filter": {
+        "range": {
+          "total_amount": {
+            "lt": 50
+          }
+        }
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "low_value": {
+      "filter": {
+        "range": {
+          "total_amount": {
+            "lt": 50
+          }
+        }
+      },
+      "aggs": {
+        "avg_amount": {
+          "avg": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "size": 0,
+  "aggs": {
+    "my_filter": {
+      "filters": {
+        "filters": {
+          "pasta": {
+            "match": {
+              "title": "pasta"
+            }
+          },
+          "spaghetti": {
+            "match": {
+              "title": "spaghetti"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET /recipe/_search
+{
+  "size": 0,
+  "aggs": {
+    "my_filter": {
+      "filters": {
+        "filters": {
+          "pasta": {
+            "match": {
+              "title": "pasta"
+            }
+          },
+          "spaghetti": {
+            "match": {
+              "title": "spaghetti"
+            }
+          }
+        }
+      },
+      "aggs": {
+        "avg_rating": {
+          "avg": {
+            "field": "ratings"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_distribution": {
+      "range": {
+        "field": "total_amount",
+        "ranges": [
+          {
+            "to": 50
+          },
+          {
+            "from": 50,
+            "to": 100
+          },
+          {
+            "from": 100
+          }
+        ]
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y"
+          }
+        ]
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "keyed": true,
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y"
+          }
+        ]
+      }
+    }
+  }
+}
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "keyed": true,
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M",
+            "key": "first_half"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y",
+            "key": "second_half"
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "keyed": true,
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M",
+            "key": "first_half"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y",
+            "key": "second_half"
+          }
+        ]
+      },
+      "aggs": {
+        "bucket_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_distribution": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_distribution": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25,
+        "min_doc_count": 1
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "aggs": {
+    "amount_distribution": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25,
+        "min_doc_count": 0,
+        "extended_bounds": {
+          "min": 0,
+          "max": 500
+        }
+      }
+    }
+  }
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_over_time": {
+      "date_histogram": {
+        "field": "purchased_at",
+        "calendar_interval": "month"
+      }
+    }
+  }
+}
+
+
+GET /order/_search
+{
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "all_orders": {
+      "global": { },
+      "aggs": {
+        "stats_amount": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET /order/_search
+{
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "all_orders": {
+      "global": { },
+      "aggs": {
+        "stats_amount": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    },
+    "stats_expensive": {
+      "stats": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+
+POST /order/_doc/1001
+{
+  "total_amount": 100
+}
+
+
+POST /order/_doc/1002
+{
+  "total_amount": 200,
+  "status": null
+}
+
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_without_status": {
+      "missing": {
+        "field": "status"
+      }
+    }
+  }
+}
+
+
+GET /order/_doc/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_without_status": {
+      "missing": {
+        "field": "status"
+      },
+      "aggs": {
+        "missing_sum": {
+          "sum": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+
+DELETE /order/_doc/1001
+DELETE /order/_doc/1002
+
+GET /department/_search
+{
+  "size": 0,
+  "aggs": {
+    "employees": {
+      "nested": {
+        "path": "employees"
+      }
+    }
+  }
+}
+
+
+GET /department/_search
+{
+  "size": 0,
+  "aggs": {
+    "employees": {
+      "nested": {
+        "path": "employees"
+      },
+      "aggs": {
+        "minimum_age": {
+          "min": {
+            "field": "employees.age"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+PUT /proximity/_doc/1
+{
+  "title": "Spicy Sauce"
+}
+PUT /proximity/_doc/2
+{
+  "title": "Spicy Tomato Sauce"
+}
+PUT /proximity/_doc/3
+{
+  "title": "Spicy Tomato and Garlic Sauce"
+}
+PUT /proximity/_doc/4
+{
+  "title": "Tomato Sauce (spicy)"
+}
+PUT /proximity/_doc/5
+{
+  "title": "Spicy and very delicious Tomato Sauce"
+}
+
+
+GET /proximity/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": {
+        "query": "spicy sauce",
+        "slop": 2
+      }
+    }
+  }
+}
+
+
+GET /proximity/_search
+{
+  "query": {
+    "bool": {
+      "must": [{
+        "match":{
+        "title":{       
+        "query": "spicy sauce"
+        }
+      }
+      }],
+      "should": [
+        {
+        "match_phrase":{
+        "title":{       
+        "query": "spicy sauce",
+        "slop": 5
+        }
+      }
+      }]
+    }
+  }
+}
+
+
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query":"l0bster",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query":"lobster",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query":"l0bster love",
+        "operator": "and", 
+        "fuzziness": 1
+      }
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query":"lvie",
+        "fuzziness": 1,
+        "fuzzy_transpositions": false
+      }
+    }
+  }
+}
+
+# fuzzy query is term level query
+GET /products/_search
+{
+  "query": {
+    "fuzzy": {
+      "name": {
+        "value":"LOBSTER",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+
+GET /products/_search
+{
+  "query": {
+    "fuzzy": {
+      "name": {
+        "value":"lobster",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+
+
+PUT /synonyms
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "synonym_test": {
+          "type": "synonym", 
+          "synonyms": [
+            "awful => terrible",
+            "awesome => great, super",
+            "elasticsearch, logstash, kibana => elk",
+            "weird, strange"
+          ]
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "synonym_test"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+
+
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "awesome"
+}
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "Elasticsearch"
+}
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "weird"
+}
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "Elasticsearch is awesome, but can also seem weird sometimes."
+}
+
+POST /synonyms/_doc
+{
+  "description": "Elasticsearch is awesome, but can also seem weird sometimes."
+}
+
+GET /synonyms/_search
+{
+  "query": {
+    "match": {
+      "description": "great"
+    }
+  }
+}
+GET /synonyms/_search
+{
+  "query": {
+    "match": {
+      "description": "awesome"
+    }
+  }
+}
+
+DELETE synonyms
+
+PUT /synonyms
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "synonym_test": {
+          "type": "synonym",
+          "synonyms_path": "analysis/synonyms.txt"
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "synonym_test"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+
+
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "Elasticsearch"
+}
+
+
+
+PUT /highlighting/_doc/1
+{
+  "description": "Let me tell you a story about Elasticsearch. It's a full-text search engine that is built on Apache Lucene. It's really easy to use, but also packs lots of advanced features that you can use to tweak its searching capabilities. Lots of well-known and established companies use Elasticsearch, and so should you!"
+}
+
+
+GET /highlighting/_search
+{
+  "_source": false,
+  "query": {
+    "match": { "description": "Elasticsearch story" }
+  },
+  "highlight": {
+    "fields": {
+      "description" : {}
+    }
+  }
+}
+
+
+GET /highlighting/_search
+{
+  "_source": false,
+  "query": {
+    "match": { "description": "Elasticsearch story" }
+  },
+  "highlight": {
+    "pre_tags": [ "<strong>" ],
+    "post_tags": [ "</strong>" ],
+    "fields": {
+      "description" : {}
+    }
+  }
+}
+
+
+
+PUT /stemming_test
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "synonym_test": {
+          "type": "synonym",
+          "synonyms": [
+            "firm => company",
+            "love, enjoy"
+          ]
+        },
+        "stemmer_test" : {
+          "type" : "stemmer",
+          "name" : "english"
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "synonym_test",
+            "stemmer_test"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+
+
+PUT /stemming_test/_doc/1
+{
+  "description": "I love working for my firm!"
+}
+
+
+GET /stemming_test/_search
+{
+  "query": {
+    "match": {
+      "description": "enjoy work"
+    }
+  }
+}
+
+
+GET /stemming_test/_search
+{
+  "query": {
+    "match": {
+      "description": "love working"
+    }
+  }
+}
+
+GET /stemming_test/_search
+{
+  "query": {
+    "match": {
+      "description": "enjoy work"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "description": {}
+    }
+  }
+}
+
